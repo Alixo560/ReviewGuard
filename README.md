@@ -18,8 +18,15 @@ ReviewGuard（评盾）用于“大数据原理与技术”课程最终大作业
 .
 ├── app.py                         # 视频展示用的可视化演示页面
 ├── data/
-│   └── sample_reviews.csv          # 小规模示例数据，后续替换为真实数据
+│   ├── raw/                        # 原始 train/dev/test txt
+│   ├── train.csv                   # 训练集（label,text）
+│   ├── dev.csv                     # 验证集
+│   ├── test.csv                    # 测试集
+│   ├── hit_stopwords.txt           # 中文停用词表
+│   └── sample_reviews.csv          # 小规模演示样例
 ├── docs/
+│   ├── data_statistics.md          # 数据统计报告（脚本生成）
+│   ├── figures/                    # 统计图输出目录
 │   ├── report_template.md          # 实验报告模板
 │   ├── presentation_outline.md     # 课堂展示提纲
 │   └── team_plan.md                # 四人分工建议
@@ -28,6 +35,9 @@ ReviewGuard（评盾）用于“大数据原理与技术”课程最终大作业
 └── src/
     ├── config.py
     ├── preprocess.py
+    ├── data_io.py
+    ├── convert_data.py
+    ├── data_stats.py
     ├── train.py
     └── predict.py
 ```
@@ -40,10 +50,22 @@ ReviewGuard（评盾）用于“大数据原理与技术”课程最终大作业
 pip install -r requirements.txt
 ```
 
+数据转换（从 `data/raw/*.txt` 生成 CSV，若已存在 `data/*.csv` 可跳过）：
+
+```powershell
+python -m src.convert_data
+```
+
+生成数据统计报告与图表：
+
+```powershell
+python -m src.data_stats
+```
+
 训练模型：
 
 ```powershell
-python -m src.train --data data/sample_reviews.csv --model logistic_regression
+python -m src.train --data data/train.csv --model logistic_regression
 ```
 
 单条预测：
@@ -63,14 +85,16 @@ streamlit run app.py
 数据文件使用 CSV，至少包含两列：
 
 ```text
-text,label
-评论文本,0或1
+label,text
+0或1,评论文本
 ```
 
-其中：
+其中（京东数据集标签规则）：
 
-- `0`：正常评论
-- `1`：疑似虚假评论/水军评论
+- `0`：虚假/水军评论
+- `1`：真实用户评论
+
+预处理由 `src/preprocess.py` 完成，训练时 `train.py` 会自动调用，不需要单独生成清洗后的 CSV。
 
 ## 后续建议
 
